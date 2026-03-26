@@ -7,7 +7,9 @@ from typing import Optional, Union, Any
 from collections.abc import Mapping
 
 
-def prepare_filters(filters: Union[str, list[str], Mapping[str, str]]) -> Optional[str]:
+def prepare_filters(
+    filters: Union[str, list[str], Mapping[str, Any], None],
+) -> Optional[str]:
     """Return filters as an URL quoted JSON dict[str, list[Any]]."""
 
     if filters is None or len(filters) == 0:

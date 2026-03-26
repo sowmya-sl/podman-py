@@ -60,7 +60,7 @@ class SecretsManager(Manager):
         super().__init__(client)
 
     def exists(self, key: str) -> bool:
-        response = self.client.get(f"/secrets/{key}/json")
+        response = self.api.get(f"/secrets/{key}/json")
         return response.ok
 
     # pylint is flagging 'secret_id' here vs. 'key' parameter in super.get()
@@ -74,7 +74,7 @@ class SecretsManager(Manager):
             NotFound: when Secret does not exist
             APIError: when error returned by service
         """
-        response = self.client.get(f"/secrets/{secret_id}/json")
+        response = self.api.get(f"/secrets/{secret_id}/json")
         response.raise_for_status()
         return self.prepare_model(attrs=response.json())
 
@@ -87,7 +87,7 @@ class SecretsManager(Manager):
         Raises:
             APIError: when error returned by service
         """
-        response = self.client.get("/secrets/json")
+        response = self.api.get("/secrets/json")
         response.raise_for_status()
         return [self.prepare_model(attrs=item) for item in response.json()]
 
@@ -113,7 +113,7 @@ class SecretsManager(Manager):
             "name": name,
             "driver": driver,
         }
-        response = self.client.post("/secrets/create", params=params, data=data)
+        response = self.api.post("/secrets/create", params=params, data=data)
         response.raise_for_status()
 
         body = response.json()
@@ -139,5 +139,5 @@ class SecretsManager(Manager):
         if isinstance(secret_id, Secret):
             secret_id = secret_id.id
 
-        response = self.client.delete(f"/secrets/{secret_id}", params={"all": all})
+        response = self.api.delete(f"/secrets/{secret_id}", params={"all": all})
         response.raise_for_status()

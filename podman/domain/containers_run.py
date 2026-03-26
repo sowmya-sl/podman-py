@@ -108,6 +108,6 @@ class RunMixin:  # pylint: disable=too-few-public-methods
             container.remove()
 
         if exit_status != 0:
-            raise ContainerError(container, exit_status, command, image_id, log_iter)
+            raise ContainerError(container, exit_status, command or [], image_id, log_iter)
 
         return log_iter if kwargs.get("stream", False) or log_iter is None else b"".join(log_iter)  # type: ignore[return-value]

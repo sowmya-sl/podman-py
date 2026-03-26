@@ -21,6 +21,7 @@ except ImportError:
 def podman_version() -> tuple[int, ...]:
     cmd = ["podman", "info", "--format", "{{.Version.Version}}"]
     with subprocess.Popen(cmd, stdout=subprocess.PIPE) as proc:
+        assert proc.stdout is not None
         version = proc.stdout.read().decode("utf-8").strip()
     match = re.match(r"(\d+\.\d+\.\d+)", version)
     if not match:

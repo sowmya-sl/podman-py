@@ -96,7 +96,7 @@ class QuadletsManager(Manager):
         Returns:
             True if the quadlet exists, False otherwise.
         """
-        response = self.client.get(f"/quadlets/{key}/exists")
+        response = self.api.get(f"/quadlets/{key}/exists")
         if response.status_code == 404:
             return False
         response.raise_for_status()
@@ -112,7 +112,7 @@ class QuadletsManager(Manager):
             NotFound: when quadlet could not be found
             APIError: when service reports an error
         """
-        response = self.client.get(
+        response = self.api.get(
             "/quadlets/json",
             params={"filters": api.prepare_filters({"name": name})},
         )
@@ -137,7 +137,7 @@ class QuadletsManager(Manager):
         if filters:
             params["filters"] = filters
 
-        response = self.client.get("/quadlets/json", params=params)
+        response = self.api.get("/quadlets/json", params=params)
 
         if response.status_code == requests.codes.not_found:
             return []
@@ -160,7 +160,7 @@ class QuadletsManager(Manager):
         if isinstance(name, Quadlet):
             name = name.name
 
-        response = self.client.get(f"/quadlets/{name}/file")
+        response = self.api.get(f"/quadlets/{name}/file")
         response.raise_for_status()
         return response.text
 
@@ -180,7 +180,7 @@ class QuadletsManager(Manager):
         if isinstance(name, Quadlet):
             name = name.name
 
-        response = self.client.get(f"/quadlets/{name}/file")
+        response = self.api.get(f"/quadlets/{name}/file")
         response.raise_for_status()
         print(response.text.strip())
 
@@ -219,9 +219,9 @@ class QuadletsManager(Manager):
 
         if all:
             params["all"] = True
-            response = self.client.delete("/quadlets", params=params)
+            response = self.api.delete("/quadlets", params=params)
         else:
-            response = self.client.delete(f"/quadlets/{name}", params=params)
+            response = self.api.delete(f"/quadlets/{name}", params=params)
 
         response.raise_for_status()
         return response.json()["Removed"]
@@ -299,7 +299,7 @@ class QuadletsManager(Manager):
             tar_path = pathlib.Path(first)
             if not tar_path.is_file():
                 raise FileNotFoundError(f"No such file: '{tar_path}'")
-            response = self.client.post(
+            response = self.api.post(
                 "/quadlets",
                 params=params,
                 data=tar_path.read_bytes(),
@@ -307,7 +307,7 @@ class QuadletsManager(Manager):
             )
         else:
             multipart = self._prepare_install_body(files)
-            response = self.client.post(
+            response = self.api.post(
                 "/quadlets",
                 params=params,
                 files=multipart,

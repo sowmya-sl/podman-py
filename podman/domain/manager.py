@@ -47,6 +47,13 @@ class PodmanResource(ABC):  # noqa: B024
         if attrs is not None:
             self.attrs.update(attrs)
 
+    @property
+    def api(self) -> APIClient:
+        """Return the API client, raising if not configured."""
+        if self.client is None:
+            raise AttributeError(f"{self.__class__.__name__} has no API client configured")
+        return self.client
+
     def __repr__(self):
         return f"<{self.__class__.__name__}: {self.short_id}>"
 
@@ -115,6 +122,13 @@ class Manager(ABC):
         super().__init__()
         self.client = client
         self.podman_client = podman_client
+
+    @property
+    def api(self) -> APIClient:
+        """Return the API client, raising if not configured."""
+        if self.client is None:
+            raise AttributeError(f"{self.__class__.__name__} has no API client configured")
+        return self.client
 
     @abstractmethod
     def exists(self, key: str) -> bool:

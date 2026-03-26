@@ -3,7 +3,7 @@
 import logging
 import urllib
 from collections.abc import Mapping
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 from podman import api
 from podman.domain.containers import Container
@@ -24,7 +24,7 @@ class ContainersManager(RunMixin, CreateMixin, Manager):
         return Container
 
     def exists(self, key: str) -> bool:
-        response = self.client.get(f"/containers/{key}/exists")
+        response = self.api.get(f"/containers/{key}/exists")
         return response.ok
 
     def get(self, key: str, **kwargs) -> Container:
@@ -46,7 +46,7 @@ class ContainersManager(RunMixin, CreateMixin, Manager):
         compatible = kwargs.get("compatible", False)
 
         container_id = urllib.parse.quote_plus(key)
-        response = self.client.get(f"/containers/{container_id}/json", compatible=compatible)
+        response = self.api.get(f"/containers/{container_id}/json", compatible=compatible)
         response.raise_for_status()
         return self.prepare_model(attrs=response.json())
 
@@ -105,7 +105,7 @@ class ContainersManager(RunMixin, CreateMixin, Manager):
         # filters formatted last because some kwargs may need to be mapped into filters
         params["filters"] = api.prepare_filters(params["filters"])
 
-        response = self.client.get("/containers/json", params=params, compatible=compatible)
+        response = self.api.get("/containers/json", params=params, compatible=compatible)
         response.raise_for_status()
 
         containers: list[Container] = [self.prepare_model(attrs=i) for i in response.json()]
@@ -121,7 +121,7 @@ class ContainersManager(RunMixin, CreateMixin, Manager):
 
         return containers
 
-    def prune(self, filters: Mapping[str, str] = None) -> dict[str, Any]:
+    def prune(self, filters: Optional[Mapping[str, str]] = None) -> dict[str, Any]:
         """Delete stopped containers.
 
         Args:
@@ -138,7 +138,7 @@ class ContainersManager(RunMixin, CreateMixin, Manager):
             APIError: when service reports an error
         """
         params = {"filters": api.prepare_filters(filters)}
-        response = self.client.post("/containers/prune", params=params)
+        response = self.api.post("/containers/prune", params=params)
         response.raise_for_status()
 
         results = {"ContainersDeleted": [], "SpaceReclaimed": 0}
@@ -173,5 +173,5 @@ class ContainersManager(RunMixin, CreateMixin, Manager):
         # v is used for the compat endpoint while volumes is used for the libpod endpoint
         params = {"v": kwargs.get("v"), "force": kwargs.get("force"), "volumes": kwargs.get("v")}
 
-        response = self.client.delete(f"/containers/{container_id}", params=params)
+        response = self.api.delete(f"/containers/{container_id}", params=params)
         response.raise_for_status()

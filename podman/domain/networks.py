@@ -112,7 +112,7 @@ class Network(PodmanResource):
         data = {"Container": container, "EndpointConfig": endpoint_config}
         data = {k: v for (k, v) in data.items() if not (v is None or len(v) == 0)}  # type: ignore[arg-type]
 
-        response = self.client.post(
+        response = self.api.post(
             f"/networks/{self.name}/connect",
             data=json.dumps(data),
             headers={"Content-type": "application/json"},
@@ -136,7 +136,7 @@ class Network(PodmanResource):
             container = container.id
 
         data = {"Container": container, "Force": kwargs.get("force")}
-        response = self.client.post(f"/networks/{self.name}/disconnect", data=json.dumps(data))
+        response = self.api.post(f"/networks/{self.name}/disconnect", data=json.dumps(data))
         response.raise_for_status()
 
     def remove(self, force: Optional[bool] = None, **kwargs) -> None:

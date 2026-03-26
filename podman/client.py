@@ -127,11 +127,10 @@ class PodmanClient(AbstractContextManager):
         environment = environment or os.environ
         credstore_env = credstore_env or {}
 
-        if version == "auto":
-            version = None
+        api_version: Optional[str] = None if version == "auto" else version
 
         kwargs = {
-            'version': version,
+            'version': api_version,
             'timeout': timeout,
             'tls': False,
             'credstore_env': credstore_env,

@@ -123,7 +123,7 @@ class BuildMixin:
         if kwargs.get("timeout"):
             post_kwargs["timeout"] = float(kwargs.get("timeout"))
 
-        response = self.client.post(  # type: ignore[attr-defined]
+        response = self.api.post(  # type: ignore[attr-defined]
             "/build",
             params=params,
             data=body,

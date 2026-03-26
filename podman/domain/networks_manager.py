@@ -71,7 +71,7 @@ class NetworksManager(Manager):
         with suppress(KeyError):
             self._prepare_ipam(data, kwargs["ipam"])
 
-        response = self.client.post(
+        response = self.api.post(
             "/networks/create",
             data=http_utils.prepare_body(data),
             headers={"Content-Type": "application/json"},
@@ -103,7 +103,7 @@ class NetworksManager(Manager):
             data["subnets"].append(subnet)
 
     def exists(self, key: str) -> bool:
-        response = self.client.get(f"/networks/{key}/exists")
+        response = self.api.get(f"/networks/{key}/exists")
         return response.ok
 
     def get(self, key: str) -> Network:
@@ -116,7 +116,7 @@ class NetworksManager(Manager):
             NotFound: when Network does not exist
             APIError: when error returned by service
         """
-        response = self.client.get(f"/networks/{key}")
+        response = self.api.get(f"/networks/{key}")
         response.raise_for_status()
 
         return self.prepare_model(attrs=response.json())
@@ -159,7 +159,7 @@ class NetworksManager(Manager):
         filters = prepare_filters(filters)
 
         params = {"filters": filters}
-        response = self.client.get("/networks/json", params=params)
+        response = self.api.get("/networks/json", params=params)
         response.raise_for_status()
 
         return [self.prepare_model(i) for i in response.json()]
@@ -178,7 +178,7 @@ class NetworksManager(Manager):
             APIError: when service reports error
         """
         params = {"filters": prepare_filters(filters)}
-        response = self.client.post("/networks/prune", params=params)
+        response = self.api.post("/networks/prune", params=params)
         response.raise_for_status()
 
         deleted: list[str] = []
@@ -206,5 +206,5 @@ class NetworksManager(Manager):
         if isinstance(name, Network):
             name = name.name
 
-        response = self.client.delete(f"/networks/{name}", params={"force": force})
+        response = self.api.delete(f"/networks/{name}", params={"force": force})
         response.raise_for_status()

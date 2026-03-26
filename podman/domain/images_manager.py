@@ -45,7 +45,7 @@ class ImagesManager(BuildMixin, Manager):
     def exists(self, key: str) -> bool:
         """Return true when image exists."""
         key = urllib.parse.quote_plus(key)
-        response = self.client.get(f"/images/{key}/exists")
+        response = self.api.get(f"/images/{key}/exists")
         return response.ok
 
     def list(self, **kwargs) -> builtins.list[Image]:
@@ -71,7 +71,7 @@ class ImagesManager(BuildMixin, Manager):
             "all": kwargs.get("all"),
             "filters": api.prepare_filters(filters=filters),
         }
-        response = self.client.get("/images/json", params=params)
+        response = self.api.get("/images/json", params=params)
         if response.status_code == requests.codes.not_found:
             return []
         response.raise_for_status()
@@ -90,7 +90,7 @@ class ImagesManager(BuildMixin, Manager):
             APIError: when service returns an error
         """
         name = urllib.parse.quote_plus(name)
-        response = self.client.get(f"/images/{name}/json")
+        response = self.api.get(f"/images/{name}/json")
         response.raise_for_status(not_found=ImageNotFound)
 
         return self.prepare_model(response.json())
@@ -152,7 +152,7 @@ class ImagesManager(BuildMixin, Manager):
                 yield self.get(item)
 
         with Path(file_path).open("rb") if file_path else io.BytesIO(data) as stream:
-            response = self.client.post(
+            response = self.api.post(
                 "/images/load", data=stream, headers={"Content-type": "application/x-tar"}
             )
             response.raise_for_status()
@@ -191,7 +191,7 @@ class ImagesManager(BuildMixin, Manager):
             "filters": api.prepare_filters(filters),
         }
 
-        response = self.client.post("/images/prune", params=params)
+        response = self.api.post("/images/prune", params=params)
         response.raise_for_status()
 
         deleted: builtins.list[dict[str, str]] = []
@@ -269,7 +269,7 @@ class ImagesManager(BuildMixin, Manager):
 
         name = f'{repository}:{tag}' if tag else repository
         name = urllib.parse.quote_plus(name)
-        response = self.client.post(
+        response = self.api.post(
             f"/images/{name}/push", params=params, stream=stream, headers=headers
         )
         response.raise_for_status(not_found=ImageNotFound)
@@ -395,7 +395,7 @@ class ImagesManager(BuildMixin, Manager):
         if not params["compatMode"] and not stream:
             params["quiet"] = True
 
-        response = self.client.post("/images/pull", params=params, stream=stream, headers=headers)
+        response = self.api.post("/images/pull", params=params, stream=stream, headers=headers)
         response.raise_for_status(not_found=ImageNotFound)
 
         if progress_bar:
@@ -479,7 +479,7 @@ class ImagesManager(BuildMixin, Manager):
         if isinstance(image, Image):
             image = image.id
 
-        response = self.client.delete(f"/images/{image}", params={"force": force})
+        response = self.api.delete(f"/images/{image}", params={"force": force})
         response.raise_for_status(not_found=ImageNotFound)
 
         body = response.json()
@@ -521,7 +521,7 @@ class ImagesManager(BuildMixin, Manager):
         if "listTags" in kwargs:
             params["listTags"] = kwargs.get("listTags")
 
-        response = self.client.get("/images/search", params=params)
+        response = self.api.get("/images/search", params=params)
         response.raise_for_status(not_found=ImageNotFound)
         return response.json()
 
@@ -548,7 +548,7 @@ class ImagesManager(BuildMixin, Manager):
         if dest is not None:
             params["destination"] = dest
 
-        response = self.client.post(f"/images/scp/{source}", params=params)
+        response = self.api.post(f"/images/scp/{source}", params=params)
         response.raise_for_status()
         return response.json()
 
