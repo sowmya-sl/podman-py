@@ -70,6 +70,7 @@ class BuildMixin:
             manifest (str) - add the image to the specified manifest list.
                 Creates manifest list if it does not exist.
             secrets (list[str]) - Secret files/envs to expose to the build
+            ssh (list[str]) - SSH agent socket or keys to expose to the build
 
         Returns:
             first item is the podman.domain.images.Image built
@@ -215,6 +216,9 @@ class BuildMixin:
 
         if "secrets" in kwargs:
             params["secrets"] = json.dumps(kwargs.get("secrets"))
+
+        if "ssh" in kwargs:
+            params["ssh"] = json.dumps(kwargs.get("ssh"))
 
         # Remove any unset parameters
         return dict(filter(lambda i: i[1] is not None, params.items()))
